@@ -1,0 +1,126 @@
+title: "Predicting Accuracy in Exercises"
+author: "Steve Lipsky"
+date: "Saturday, December 20, 2014"
+output: html_document
+---
+
+This paper seeks to explain how a machine learning algorithm was fit to exercise data made available from Groupware (http://groupware.les.inf.puc-rio.br/har#weight_lifting_exercises).
+
+A particular section of the data, "weight lifting exercises", concerns information related to a series of exercises repetitions.  Readings were taken from a number of bodily sensors in an effort to understand various movements when the exercise was done correctly and when it was done incorrectly.  There were four defined methods of incorrect methods, so there were a total of five classifications (1 correct, referred to as "A", and four incorrect, referred to as "B" through "D".)
+
+The data was split into over 19,000 training records and 20 test records. Data was also preprocessed using the center and scale functions.  This is done to put all variables into the same orders of magnitude, which helps R calculate the model. 
+
+Using the training records, an algorithm was fit using a subset of the available variables.  This subset was chosen using the following method:
+
+1) Remove any variable with a large amount of missing data
+2) Take any variable with "dumbbell" in its name
+3) Examine the model accuracy
+
+After this process was initially complete, the model was fit on approximately 20 variables.  It achieved an accuracy rate of 80% on the training data.  While this is a decent result, some additional variables were added.  Variables with "forearm" in the name, since this seemed intuitively important in performing the given exercise, were initially included.  Additionally, a seemingly random set of predictors (those with "belt" in the name) in an effort to see how the eventual model deemed their importance.
+
+
+```{r}
+setwd("C:/Users/slipsky/Desktop/Coursera")
+library(caret)
+traindata<-read.csv("pml-training_tidy.csv",header=TRUE,sep=",")
+testdata<-read.csv("pml-testing.csv",header=TRUE,sep=",")
+traindata<-traindata[,-53]
+traindata[, c(1:52)] <- sapply(traindata[, c(1:52)], as.numeric)
+
+pre1<-preProcess(traindata[,-53],method=c("center","scale"))
+
+
+traindata2<-traindata[,c("roll_dumbbell","pitch_dumbbell","yaw_dumbbell",
+                         "total_accel_dumbbell","gyros_dumbbell_x",
+                         "gyros_dumbbell_y","gyros_dumbbell_z",
+                         "accel_dumbbell_x","accel_dumbbell_y",
+                         "accel_dumbbell_z","magnet_dumbbell_x",
+                         "magnet_dumbbell_y","magnet_dumbbell_z",
+                         "roll_forearm","pitch_forearm","yaw_forearm",
+                         "total_accel_forearm","gyros_forearm_x",
+                         "gyros_forearm_y","gyros_forearm_z",
+                         "accel_forearm_x","accel_forearm_y",
+                         "accel_forearm_z","roll_belt",
+                         "pitch_belt",
+                         "yaw_belt",
+                         "total_accel_belt",
+                         "gyros_belt_x",
+                         "gyros_belt_y",
+                         "gyros_belt_z",
+                         "accel_belt_x",
+                         "accel_belt_y",
+                         "accel_belt_z",
+                         "classe")]
+
+testdata2<-testdata[,c("roll_dumbbell","pitch_dumbbell","yaw_dumbbell",
+                         "total_accel_dumbbell","gyros_dumbbell_x",
+                         "gyros_dumbbell_y","gyros_dumbbell_z",
+                         "accel_dumbbell_x","accel_dumbbell_y",
+                         "accel_dumbbell_z","magnet_dumbbell_x",
+                         "magnet_dumbbell_y","magnet_dumbbell_z",
+                       "roll_forearm","pitch_forearm","yaw_forearm",
+                       "total_accel_forearm","gyros_forearm_x",
+                       "gyros_forearm_y","gyros_forearm_z",
+                       "accel_forearm_x","accel_forearm_y",
+                       "accel_forearm_z","roll_belt",
+                       "pitch_belt",
+                       "yaw_belt",
+                       "total_accel_belt",
+                       "gyros_belt_x",
+                       "gyros_belt_y",
+                       "gyros_belt_z",
+                       "accel_belt_x",
+                       "accel_belt_y",
+                       "accel_belt_z"
+)]
+```
+
+We will now convert all the fields to numerics, and limit the training data to a random sample of 6,000 rows.  This is done to limit processing time.
+
+```{r}
+testdata2[, c(1:13)] <- sapply(testdata2[, c(1:13)], as.numeric)
+
+traindata3<-traindata2[sample(nrow(traindata2),6000),]
+traindata3[, c(1:33)] <- sapply(traindata3[, c(1:33)], as.numeric)
+```
+
+We then further split the training data into the true training data and a validation set:
+
+```{r}
+set.seed(125)
+inTrain<-createDataPartition(y=traindata3$classe,p=0.7,list=FALSE)
+traindatafinal<-traindata3[inTrain,]
+traindatavalidation<-traindata3[-inTrain,]
+```
+
+
+A model was then fit on the true final data using method GBM.  The model code is:
+
+modFit<-train(classe~.,method="gbm",data=traindatafinal)
+
+```{r cachedChunk, cache=TRUE, include=FALSE}
+modFit<-train(classe~.,method="gbm",data=traindatafinal)
+```
+
+```{r}
+summary(modFit)
+```
+
+The information above shows all the predictors and their value to the model.  To see how the model performed from an accuracy standpoint, let's examine the predictions and confusion matrix.
+
+```{r}
+predtrainfinal<-predict(modFit,traindatafinal)
+confusionMatrix(traindatafinal[,34], predtrainfinal)
+```
+
+The accuracy of the training model is over 97%, much better than the original "dumbbell" only version (not shown for simplicity).  Therefore the error rate (1- accuracy) is ~2.5%
+
+To estimate the out-of-sample error, we look to the confusion matrix of the validation data set:
+
+```{r}
+
+predtrainvalidation<-predict(modFit,traindatavalidation)
+confusionMatrix(traindatavalidation[,34], predtrainvalidation)
+```
+
+Applying the original model to the validation set gives a smaller accuracy, as expected.  Here the accuracy is 92.9%, which translates to an out-of-sample error rate of about 7%.
