@@ -137,36 +137,40 @@ traindatavalidation&lt;-traindata3[-inTrain,]</code></pre>
 <p>A model was then fit on the true final data using method GBM. The model code is:</p>
 <p>modFit&lt;-train(classe~.,method=â€œgbmâ€,data=traindatafinal)</p>
 <pre class="r"><code>summary(modFit)</code></pre>
-<pre><code>##                   Length Class      Mode     
-## initF                 1  -none-     numeric  
-## fit               21015  -none-     numeric  
-## train.error         150  -none-     numeric  
-## valid.error         150  -none-     numeric  
-## oobag.improve       150  -none-     numeric  
-## trees               750  -none-     list     
-## c.splits              0  -none-     list     
-## bag.fraction          1  -none-     numeric  
-## distribution          1  -none-     list     
-## interaction.depth     1  -none-     numeric  
-## n.minobsinnode        1  -none-     numeric  
-## num.classes           1  -none-     numeric  
-## n.trees               1  -none-     numeric  
-## nTrain                1  -none-     numeric  
-## train.fraction        1  -none-     numeric  
-## response.name         1  -none-     character
-## shrinkage             1  -none-     numeric  
-## var.levels           33  -none-     list     
-## var.monotone         33  -none-     numeric  
-## var.names            33  -none-     character
-## var.type             33  -none-     numeric  
-## verbose               1  -none-     logical  
-## classes               5  -none-     character
-## estimator         21015  -none-     numeric  
-## data                  6  -none-     list     
-## xNames               33  -none-     character
-## problemType           1  -none-     character
-## tuneValue             3  data.frame list     
-## obsLevels             5  -none-     character</code></pre>
+<pre><code>                                      var     rel.inf
+roll_belt                       roll_belt 21.97716473
+pitch_forearm               pitch_forearm 11.81983375
+magnet_dumbbell_z       magnet_dumbbell_z  8.93973804
+yaw_belt                         yaw_belt  8.93620428
+magnet_dumbbell_y       magnet_dumbbell_y  7.06385055
+roll_forearm                 roll_forearm  6.45852613
+gyros_belt_z                 gyros_belt_z  5.26975928
+accel_forearm_x           accel_forearm_x  3.41869999
+pitch_belt                     pitch_belt  3.32343043
+roll_dumbbell               roll_dumbbell  3.00951727
+accel_forearm_z           accel_forearm_z  2.41927937
+magnet_dumbbell_x       magnet_dumbbell_x  2.24095949
+accel_dumbbell_y         accel_dumbbell_y  1.99455034
+gyros_dumbbell_y         gyros_dumbbell_y  1.98150841
+accel_dumbbell_x         accel_dumbbell_x  1.69702957
+gyros_belt_y                 gyros_belt_y  1.36052221
+accel_dumbbell_z         accel_dumbbell_z  1.28827760
+total_accel_forearm   total_accel_forearm  1.08065146
+accel_belt_z                 accel_belt_z  0.94414322
+total_accel_dumbbell total_accel_dumbbell  0.90702122
+yaw_dumbbell                 yaw_dumbbell  0.63892856
+gyros_forearm_z           gyros_forearm_z  0.61364400
+pitch_dumbbell             pitch_dumbbell  0.57947554
+accel_forearm_y           accel_forearm_y  0.55178494
+gyros_dumbbell_z         gyros_dumbbell_z  0.54464405
+gyros_dumbbell_x         gyros_dumbbell_x  0.40559585
+gyros_forearm_y           gyros_forearm_y  0.14437466
+accel_belt_x                 accel_belt_x  0.12241333
+gyros_belt_x                 gyros_belt_x  0.12093636
+accel_belt_y                 accel_belt_y  0.07519986
+yaw_forearm                   yaw_forearm  0.07233552
+gyros_forearm_x           gyros_forearm_x  0.00000000
+total_accel_belt         total_accel_belt  0.00000000</code></pre>
 <p>The information above shows all the predictors and their value to the model. To see how the model performed from an accuracy standpoint, letâ€™s examine the predictions and confusion matrix.</p>
 <pre class="r"><code>predtrainfinal&lt;-predict(modFit,traindatafinal)</code></pre>
 <pre><code>## Loading required package: gbm</code></pre>
